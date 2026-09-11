@@ -1,0 +1,98 @@
+rules_version = '2';
+
+// ملاحظة مهمة: بما أن هذا مشروع بدون سيرفر (HTML/CSS/JS عادي)، هذه القواعد
+// هي طبقة الحماية الحقيقية الوحيدة لقاعدة البيانات - كل التحقق من الصلاحيات
+// يحدث هنا، وليس في كود JavaScript بالمتصفح (الذي يمكن لأي شخص تعديله بسهولة).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    // ---------------- المستخدمون ----------------
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      // عند التسجيل: يُسمح للمستخدم بإنشاء ملفه الخاص فقط بدور STUDENT وحالة ACTIVE
+      // (يمنع أي شخص من منح نفسه صلاحية ADMIN عبر التلاعب بكود المتصفح)
+      allow create: if isOwner(userId)
+        && request.resource.data.role == 'STUDENT'
+        && request.resource.data.status == 'ACTIVE';
+      // المستخدم العادي يمكنه تعديل بياناته (الاسم/الهاتف) فقط - لا يمكنه تغيير دوره أو حالته بنفسه
+      allow update: if isAdmin() || (
+        isOwner(userId)
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.status == resource.data.status
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- الوحدات والدروس ----------------
+    match /units/{unitId} {
+      allow read: if resource.data.isPublished == true || isAdmin();
+      allow write: if isAdmin();
+    }
+    match /lessons/{lessonId} {
+      allow read: if resource.data.isPublished == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ---------------- العروض والإعدادات ----------------
+    match /offers/{offerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------------- الطلبات ----------------
+    // تنبيه: بدون خادم/Cloud Functions، لا توجد طريقة نظرية لمنع المستخدم من
+    // "تعليم" طلبه كمدفوع من جهته مباشرة (markOrderPaid في checkout.js) - هذا
+    // ضعف أمني متأصل في أي مشروع Frontend فقط بدون تحقق خادم من بوابة الدفع.
+    // لتأمين هذا فعليًا في الإنتاج، الحل القياسي هو Firebase Cloud Functions
+    // (كود خادم صغير يستقبل Webhook من Paymob ويتحقق من التوقيع قبل التحديث).
+    match /orders/{orderId} {
+      allow get: if isOwner(resource.data.userId) || isAdmin();
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.total is number
+        && request.resource.data.total > 0;
+      allow update: if isAdmin() || (
+        isOwner(resource.data.userId) && request.resource.data.userId == resource.data.userId
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- صلاحيات الوصول (Enrollments) ----------------
+    // القيد الحقيقي هنا: الطالب لا يستطيع منح نفسه صلاحية وصول إلا إذا كان
+    // يملك طلبًا (Order) بحالة PAID يخصّه فعلًا ويشير لنفس الوحدة/الحصة.
+    match /enrollments/{enrollmentId} {
+      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isAdmin() || (
+        isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.orderId != null
+        && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.status == 'PAID'
+        && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId == request.auth.uid
+      );
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------------- تقدّم الطالب ----------------
+    match /progress/{progressId} {
+      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create, update: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+  }
+}

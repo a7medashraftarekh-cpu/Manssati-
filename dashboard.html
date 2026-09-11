@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحتي | أكاديميتي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section class="container" style="padding:40px 16px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+    <h1 style="color:var(--brand-900);">لوحتي</h1>
+    <a href="profile.html" class="btn btn-outline btn-sm">تعديل بياناتي</a>
+  </div>
+
+  <div id="last-watched"></div>
+
+  <h2 style="color:var(--brand-900);margin:20px 0;">وحداتي</h2>
+  <div class="grid grid-2" id="my-units"><p class="text-muted">جارٍ التحميل...</p></div>
+
+  <h2 style="color:var(--brand-900);margin:20px 0;">طلباتي وفواتيري</h2>
+  <div class="card table-wrap" style="padding:0;">
+    <table>
+      <thead><tr><th>رقم الطلب</th><th>الإجمالي</th><th>حالة الدفع</th><th>التاريخ</th></tr></thead>
+      <tbody id="orders-body"><tr><td colspan="4" class="text-center text-muted">جارٍ التحميل...</td></tr></tbody>
+    </table>
+  </div>
+</section>
+<script type="module" src="dashboard.js"></script>
+</body>
+</html>

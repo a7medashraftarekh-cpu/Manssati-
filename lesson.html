@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الدرس | أكاديميتي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section class="container-md" style="padding:40px 16px;">
+  <a href="#" id="back-link" class="text-muted" style="font-size:14px;display:inline-block;margin-bottom:12px;">← رجوع للوحدة</a>
+
+  <div class="video-wrap" id="video-wrap">
+    <p style="color:#fff;padding:20px;">جارٍ التحميل...</p>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-top:20px;">
+    <div>
+      <h1 id="lesson-title" style="color:var(--brand-900);"></h1>
+      <p id="lesson-desc" class="text-muted" style="max-width:480px;"></p>
+    </div>
+    <button class="btn btn-outline" id="complete-btn">تحديد كمكتمل</button>
+  </div>
+
+  <div style="margin-top:20px;">
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--slate-500);margin-bottom:4px;">
+      <span>تقدّمك في الوحدة</span><span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:0%;"></div></div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;margin-top:30px;">
+    <a id="prev-link" class="btn btn-outline" style="visibility:hidden;">الدرس السابق</a>
+    <a id="next-link" class="btn btn-primary" style="visibility:hidden;">الدرس التالي</a>
+  </div>
+</section>
+<script type="module" src="lesson.js"></script>
+</body>
+</html>

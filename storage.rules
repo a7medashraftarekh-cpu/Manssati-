@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// حماية الفيديوهات: تعتمد على قاعدة تسمية إلزامية لمسار الملف داخل Storage:
+//   lessons/<lessonId>
+// حيث <lessonId> هو نفس معرّف مستند الدرس في Firestore (وليس اسمًا حرًا).
+// هذا يسمح لقواعد Storage بالتحقق من Firestore مباشرة (Cross-Service Rules)
+// قبل السماح بتحميل الملف - بدون الحاجة لأي خادم.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /lessons/{lessonId} {
+
+      allow read: if request.auth != null && (
+        // الأدمن يرى كل شيء
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'ADMIN'
+        ||
+        // الدرس مجاني
+        firestore.get(/databases/(default)/documents/lessons/$(lessonId)).data.isFree == true
+        ||
+        // المستخدم اشترى هذا الدرس بالذات
+        firestore.exists(/databases/(default)/documents/enrollments/$(request.auth.uid + '__x__' + lessonId))
+        ||
+        // المستخدم اشترى الوحدة كاملة التي يتبعها هذا الدرس
+        firestore.exists(/databases/(default)/documents/enrollments/$(
+          request.auth.uid + '__' +
+          firestore.get(/databases/(default)/documents/lessons/$(lessonId)).data.unitId +
+          '__x'
+        ))
+      );
+
+      // الرفع يتم فقط يدويًا من Firebase Console بواسطة الأدمن، وليس من المتصفح
+      allow write: if false;
+    }
+  }
+}

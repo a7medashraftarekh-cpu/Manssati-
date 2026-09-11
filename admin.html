@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الأدمن | أكاديميتي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <nav id="admin-nav">
+      <a href="#dashboard" data-section="dashboard" class="active">🏠 الرئيسية</a>
+      <a href="#users" data-section="users">👥 المستخدمون</a>
+      <a href="#units" data-section="units">📚 الوحدات</a>
+      <a href="#lessons" data-section="lessons">▶️ الدروس</a>
+      <a href="#orders" data-section="orders">🧾 الطلبات</a>
+      <a href="#offers" data-section="offers">🏷️ العروض</a>
+      <a href="#settings" data-section="settings">⚙️ الإعدادات</a>
+    </nav>
+  </aside>
+
+  <div class="admin-content">
+
+    <div class="section active" id="section-dashboard">
+      <h1 style="color:var(--brand-900);margin-bottom:20px;">لوحة التحكم</h1>
+      <div class="grid grid-4" id="dashboard-stats"></div>
+      <div class="card" style="margin-top:20px;">
+        <h3 style="color:var(--brand-900);margin-bottom:12px;">المبيعات - آخر 14 يومًا</h3>
+        <div id="sales-chart" style="display:flex;align-items:flex-end;gap:6px;height:120px;"></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="card"><h3 style="color:var(--brand-900);margin-bottom:12px;">أحدث المستخدمين</h3><div id="recent-users"></div></div>
+        <div class="card"><h3 style="color:var(--brand-900);margin-bottom:12px;">أحدث الطلبات</h3><div id="recent-orders"></div></div>
+      </div>
+    </div>
+
+    <div class="section" id="section-users">
+      <h1 style="color:var(--brand-900);margin-bottom:20px;">المستخدمون</h1>
+      <input type="text" id="users-search" placeholder="بحث بالاسم أو البريد..." style="max-width:320px;">
+      <div class="card table-wrap" style="padding:0;">
+        <table><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <tbody id="users-body"></tbody></table>
+      </div>
+    </div>
+
+    <div class="section" id="section-units">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h1 style="color:var(--brand-900);">الوحدات</h1>
+        <button class="btn btn-gold btn-sm" id="add-unit-btn">+ إضافة وحدة</button>
+      </div>
+      <div id="unit-form-wrap" style="display:none;margin-bottom:20px;"></div>
+      <div id="units-body" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+
+    <div class="section" id="section-lessons">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h1 style="color:var(--brand-900);">الدروس</h1>
+        <button class="btn btn-gold btn-sm" id="add-lesson-btn">+ إضافة حصة</button>
+      </div>
+      <div id="lesson-form-wrap" style="display:none;margin-bottom:20px;"></div>
+      <div id="lessons-body"></div>
+    </div>
+
+    <div class="section" id="section-orders">
+      <h1 style="color:var(--brand-900);margin-bottom:20px;">الطلبات</h1>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <input type="text" id="orders-search" placeholder="بحث بالاسم أو البريد..." style="max-width:260px;">
+        <select id="orders-status-filter" style="max-width:160px;">
+          <option value="ALL">كل الحالات</option>
+          <option value="PENDING">قيد الانتظار</option>
+          <option value="PAID">مدفوع</option>
+          <option value="FAILED">فشل</option>
+        </select>
+      </div>
+      <div class="card table-wrap" style="padding:0;">
+        <table><thead><tr><th>رقم الطلب</th><th>المستخدم</th><th>الإجمالي</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+        <tbody id="orders-body"></tbody></table>
+      </div>
+    </div>
+
+    <div class="section" id="section-offers">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h1 style="color:var(--brand-900);">العروض</h1>
+        <button class="btn btn-gold btn-sm" id="add-offer-btn">+ إضافة عرض</button>
+      </div>
+      <div id="offer-form-wrap" style="display:none;margin-bottom:20px;"></div>
+      <div id="offers-body" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+
+    <div class="section" id="section-settings">
+      <h1 style="color:var(--brand-900);margin-bottom:20px;">إعدادات المنصة</h1>
+      <form id="settings-form" class="card" style="max-width:600px;">
+        <div class="field"><label>اسم المنصة</label><input type="text" id="s-siteName" required></div>
+        <div class="field"><label>رابط الشعار</label><input type="text" id="s-logoUrl"></div>
+        <div class="field"><label>وصف المنصة</label><textarea id="s-description" rows="3"></textarea></div>
+        <div class="field"><label>البريد للتواصل</label><input type="text" id="s-contactEmail"></div>
+        <div class="field"><label>العملة</label><input type="text" id="s-currency" style="max-width:140px;"></div>
+        <p id="settings-msg" style="display:none;font-size:14px;"></p>
+        <button type="submit" class="btn btn-gold">حفظ الإعدادات</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-backdrop" id="confirm-modal">
+  <div class="modal-box">
+    <p id="confirm-text" style="margin-bottom:16px;">هل أنت متأكد؟</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-outline btn-sm" id="confirm-cancel">إلغاء</button>
+      <button class="btn btn-danger btn-sm" id="confirm-ok">تأكيد الحذف</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="admin.js"></script>
+</body>
+</html>

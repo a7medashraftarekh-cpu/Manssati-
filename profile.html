@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تعديل البيانات | أكاديميتي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section class="container-sm" style="padding:40px 16px;display:flex;flex-direction:column;gap:20px;">
+  <a href="dashboard.html" class="text-muted" style="font-size:14px;">← رجوع إلى لوحتي</a>
+
+  <div class="card">
+    <h1 style="color:var(--brand-900);margin-bottom:20px;">تعديل البيانات</h1>
+    <form id="profile-form">
+      <div class="field"><label>الاسم الكامل</label><input type="text" id="name" required></div>
+      <div class="field"><label>رقم الهاتف (اختياري)</label><input type="text" id="phone"></div>
+      <p id="profile-msg" style="display:none;font-size:14px;"></p>
+      <button type="submit" class="btn btn-gold btn-block">حفظ التعديلات</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--brand-900);margin-bottom:20px;">تغيير كلمة المرور</h2>
+    <form id="password-form">
+      <div class="field"><label>كلمة المرور الحالية</label><input type="password" id="current-password" required></div>
+      <div class="field"><label>كلمة المرور الجديدة</label><input type="password" id="new-password" minlength="8" required></div>
+      <p id="password-msg" style="display:none;font-size:14px;"></p>
+      <button type="submit" class="btn btn-outline btn-block">تغيير كلمة المرور</button>
+    </form>
+  </div>
+</section>
+<script type="module" src="profile.js"></script>
+</body>
+</html>
