@@ -6,6 +6,7 @@ import {
   getSettings, updateSettings
 } from "./db.js";
 import { db, collection, getDocs } from "./firebase-config.js";
+import { uploadVideoToCloudinary } from "./cloudinary-config.js";
 
 renderHeader();
 renderFooter();
@@ -262,7 +263,15 @@ function showLessonForm(lesson, units) {
       <div class="field"><label>الوصف</label><textarea id="l-desc" rows="2" required>${lesson?.description || ""}</textarea></div>
       <div style="display:flex;gap:12px;">
         <div class="field" style="flex:1;"><label>المدة (ثانية)</label><input type="number" id="l-duration" required value="${lesson?.durationSec ?? 0}"></div>
-        <div class="field" style="flex:1;"><label>مسار الفيديو في Storage</label><input type="text" id="l-video" placeholder="lessons/unit-1/lesson-1.mp4" value="${lesson?.videoId || ""}"></div>
+      </div>
+      <div class="field">
+        <label>فيديو الحصة</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+          <input type="file" id="l-video-file" accept="video/*" style="margin-bottom:0;">
+          <button type="button" class="btn btn-outline btn-sm" id="l-video-upload-btn">رفع الملف</button>
+        </div>
+        <p class="text-muted" style="font-size:12px;margin-bottom:8px;" id="l-video-upload-status"></p>
+        <input type="text" id="l-video" placeholder="سيُملأ تلقائيًا بعد الرفع، أو الصق رابط يوتيوب/فيديو مباشر" value="${lesson?.videoId || ""}">
       </div>
       <div style="display:flex;gap:12px;">
         <div class="field" style="flex:1;"><label>السعر</label><input type="number" step="0.01" id="l-price" required value="${lesson?.price ?? ""}"></div>
@@ -279,6 +288,25 @@ function showLessonForm(lesson, units) {
 
   document.getElementById("cancel-lesson-form").addEventListener("click", () => { wrap.style.display = "none"; wrap.innerHTML = ""; });
 
+  document.getElementById("l-video-upload-btn").addEventListener("click", async () => {
+    const fileInput = document.getElementById("l-video-file");
+    const status = document.getElementById("l-video-upload-status");
+    const file = fileInput.files[0];
+    if (!file) { status.className = "text-danger"; status.textContent = "اختر ملف فيديو أولًا."; return; }
+
+    status.className = "text-muted";
+    status.textContent = "جارٍ الرفع... 0%";
+    try {
+      const url = await uploadVideoToCloudinary(file, (pct) => { status.textContent = `جارٍ الرفع... ${pct}%`; });
+      document.getElementById("l-video").value = url;
+      status.className = "text-success";
+      status.textContent = "✔ تم الرفع بنجاح.";
+    } catch (err) {
+      status.className = "text-danger";
+      status.textContent = err.message || "فشل الرفع.";
+    }
+  });
+
   document.getElementById("lesson-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const data = {
@@ -288,7 +316,7 @@ function showLessonForm(lesson, units) {
       description: document.getElementById("l-desc").value,
       durationSec: Number(document.getElementById("l-duration").value),
       videoId: document.getElementById("l-video").value || null,
-      videoProvider: "firebase-storage",
+      videoProvider: "url",
       price: Number(document.getElementById("l-price").value),
       offerPrice: document.getElementById("l-offer").value ? Number(document.getElementById("l-offer").value) : null,
       isOfferActive: document.getElementById("l-offer-active").checked,

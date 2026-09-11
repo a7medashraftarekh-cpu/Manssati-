@@ -1,6 +1,6 @@
 # أكاديميتي — منصة تعليمية عربية (HTML / CSS / JS بسيط + Firebase)
 
-مشروع **ثابت بالكامل** (Static) بدون أي فريموورك وبدون أي سيرفر خاص بك - كل الملفات HTML/CSS/JS عادية، ومتصلة مباشرة بـ Firebase (Firestore + Authentication + Storage) من المتصفح.
+مشروع **ثابت بالكامل** (Static) بدون أي فريموورك وبدون أي سيرفر خاص بك - كل الملفات HTML/CSS/JS عادية، ومتصلة مباشرة بـ Firebase (Firestore + Authentication) من المتصفح. الفيديوهات مستضافة على يوتيوب (Unlisted) لتفادي شرط خطة Blaze المطلوبة لـ Firebase Storage.
 
 ## ⚠️ الفرق عن نسخة السيرفر (اقرأ هذا أولًا)
 
@@ -8,7 +8,7 @@
 
 **تأكيد الدفع**: في `checkout.js`، بعد "الدفع"، الكود بيعلّم الطلب كـ `PAID` مباشرة من المتصفح. في نسخة حقيقية للإنتاج، هذا يجب أن يحدث فقط من **Webhook مُتحقَّق من التوقيع من خادم بوابة الدفع** (Paymob) - وهذا يحتاج كود خادم صغير (الحل القياسي هو **Firebase Cloud Functions**، وهي ميزة ضمن Firebase نفسه ولا تحتاج سيرفر منفصل، لكنها كود JavaScript يُكتب ويُنشر بأمر `firebase deploy --only functions`). لو حبيت أضيفها لاحقًا قولّي.
 
-كل شيء آخر (الأدوار، صلاحية الوصول للفيديو، من يقدر يعدّل الوحدات) محمي فعليًا عبر **Firestore/Storage Security Rules** المرفقة، مش JavaScript في المتصفح.
+كل شيء آخر (الأدوار، من يقدر يعدّل الوحدات، صلاحية الشراء) محمي فعليًا عبر **Firestore Security Rules** المرفقة، مش JavaScript في المتصفح. حماية الفيديو نفسها معتمدة على خاصية "Unlisted" في يوتيوب (انظر القسم 5).
 
 ---
 
@@ -17,7 +17,6 @@
 1. أنشئ مشروعًا على [console.firebase.google.com](https://console.firebase.google.com).
 2. فعّل **Firestore Database** (Production mode).
 3. فعّل **Authentication → Sign-in method → Email/Password**.
-4. فعّل **Storage**.
 5. من **Project Settings → General → Your apps** أضف "Web app" وانسخ القيم.
 6. افتح ملف `firebase-config.js` وضع القيم بدل `PUT_YOUR_...`:
    ```js
@@ -30,8 +29,8 @@
    ```bash
    npm install -g firebase-tools
    firebase login
-   firebase init   # اختر Firestore + Storage، واختر نفس المشروع، ولا تستبدل الملفات الموجودة
-   firebase deploy --only firestore:rules,storage:rules
+   firebase init   # اختر Firestore فقط، واختر نفس المشروع، ولا تستبدل الملفات الموجودة
+   firebase deploy --only firestore:rules
    ```
 
 ## 2) التشغيل محليًا
@@ -59,14 +58,26 @@ python3 -m http.server 8080
 - `admin.html` → تبويب "الوحدات" → "+ إضافة وحدة".
 - تبويب "الدروس" → "+ إضافة حصة" (اختر الوحدة، رقم الحصة، السعر...).
 
-## 5) رفع فيديو لدرس (مهم - اتبع الترتيب بالضبط)
+## 5) رفع فيديو لدرس (Cloudinary - رفع ملف حقيقي، مجاني، بدون بطاقة)
 
-بسبب طريقة حماية الفيديو (انظر `storage.rules`)، اسم الملف في Storage **يجب** أن يكون بالضبط معرّف مستند الدرس في Firestore:
+الفيديوهات بترفع كملف حقيقي من لوحة الأدمن مباشرة عبر خدمة **Cloudinary** المجانية (بدون أي بطاقة بنكية):
 
-1. أنشئ الحصة أولًا من `admin.html` (بدون فيديو).
-2. من Firebase Console → Firestore → `lessons` → افتح الحصة اللي عملتها وانسخ **معرّف المستند (Document ID)** الظاهر أعلى الصفحة.
-3. من Firebase Console → Storage → ارفع ملف الفيديو، وسمّه بالظبط بهذا المعرّف داخل مجلد `lessons/` — مثال: لو المعرّف `aZ3kP9xQ`، يبقى المسار `lessons/aZ3kP9xQ` (بدون امتداد، الفيديو هيشتغل عادي حتى من غير .mp4).
-4. ارجع لـ `admin.html` → عدّل الحصة → حقل "مسار الفيديو" اكتب `lessons/aZ3kP9xQ`.
+1. سجّل حساب مجاني على [cloudinary.com](https://cloudinary.com) (بالبريد أو Google/GitHub).
+2. من الصفحة الرئيسية (Dashboard) بعد الدخول، هتلاقي **Cloud name** ظاهر فوق - انسخه.
+3. من ⚙️ **Settings → Upload** → انزل لقسم **Upload presets** → **Add upload preset**:
+   - **Signing Mode: Unsigned** (لازم تحددها كده بالظبط، وإلا الرفع من المتصفح مش هيشتغل)
+   - احفظ، وانسخ اسم الـ Preset.
+4. افتح ملف `cloudinary-config.js` وحط القيمتين:
+   ```js
+   export const CLOUDINARY_CLOUD_NAME = "اسم-الـ-cloud-بتاعك";
+   export const CLOUDINARY_UPLOAD_PRESET = "اسم-الـ-preset-بتاعك";
+   ```
+5. ارفع الملف المُعدَّل على GitHub.
+6. من `admin.html` → تبويب "الدروس" → أضف/عدّل الحصة → اختار ملف الفيديو من جهازك → اضغط "رفع الملف" → استنى شريط التقدّم لحد 100% → هيتحط الرابط تلقائيًا، احفظ الحصة.
+
+**بديل بدون رفع ملف:** لو مش عايز تستخدم Cloudinary، تقدر تحط رابط يوتيوب (Unlisted) مباشرة في نفس الحقل بدل الرفع - النظام بيتعرّف تلقائيًا على نوع الرابط.
+
+الحصة المجانية على Cloudinary بتعطيك 25 GB تخزين/نقل شهريًا تقريبًا - كفاية جدًا لبداية منصة تعليمية.
 
 ## 6) النشر (استضافة)
 

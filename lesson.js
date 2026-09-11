@@ -1,6 +1,5 @@
 import { renderHeader, renderFooter, watchAuth } from "./nav.js";
 import { getLesson, getUnit, listLessonsByUnit, userHasAccessToLesson, listUserProgress, markLessonCompleted, getProgress } from "./db.js";
-import { storage, ref, getDownloadURL } from "./firebase-config.js";
 
 renderHeader();
 renderFooter();
@@ -10,6 +9,25 @@ const lessonId = params.get("id");
 let currentUser = null;
 
 watchAuth((profile) => { currentUser = profile; render(); });
+
+/** يقبل ID خام أو رابط يوتيوب كامل بأي صيغة، ويرجّع ID الفيديو فقط */
+function extractYoutubeId(value) {
+  if (!value) return null;
+  const patterns = [
+    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const p of patterns) {
+    const m = value.match(p);
+    if (m) return m[1];
+  }
+  if (/^[a-zA-Z0-9_-]{11}$/.test(value.trim())) return value.trim();
+  return null;
+}
+
+/** رابط فيديو مباشر (Cloudinary أو أي استضافة أخرى) - أي رابط https غير يوتيوب */
+function isDirectVideoUrl(value) {
+  return /^https?:\/\//.test(value) && !value.includes("youtube.com") && !value.includes("youtu.be");
+}
 
 async function render() {
   const lesson = await getLesson(lessonId);
@@ -23,7 +41,7 @@ async function render() {
   document.getElementById("lesson-title").textContent = lesson.title;
   document.getElementById("lesson-desc").textContent = lesson.description;
 
-  // ---- التحقق من الصلاحية (فحص فوري في الواجهة؛ الحماية الحقيقية في Storage Security Rules) ----
+  // ---- التحقق من الصلاحية ----
   let allowed = lesson.isFree;
   if (!allowed && currentUser) {
     allowed = currentUser.role === "ADMIN" || await userHasAccessToLesson(currentUser.id, unit.id, lesson.id);
@@ -35,11 +53,15 @@ async function render() {
   } else if (!lesson.videoId) {
     videoWrap.innerHTML = `<div style="color:#fff;padding:40px;text-align:center;"><p>لم يتم رفع فيديو لهذا الدرس بعد.</p></div>`;
   } else {
-    try {
-      const url = await getDownloadURL(ref(storage, lesson.videoId));
-      videoWrap.innerHTML = `<video src="${url}" controls controlsList="nodownload"></video>`;
-    } catch {
-      videoWrap.innerHTML = `<div style="color:#fff;padding:40px;text-align:center;"><p>تعذّر تحميل الفيديو.</p></div>`;
+    if (isDirectVideoUrl(lesson.videoId)) {
+      videoWrap.innerHTML = `<video src="${lesson.videoId}" controls controlsList="nodownload" style="width:100%;height:100%;"></video>`;
+    } else {
+      const ytId = extractYoutubeId(lesson.videoId);
+      if (ytId) {
+        videoWrap.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${ytId}?modestbranding=1&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      } else {
+        videoWrap.innerHTML = `<div style="color:#fff;padding:40px;text-align:center;"><p>رابط الفيديو غير صالح.</p></div>`;
+      }
     }
   }
 
