@@ -1,6 +1,27 @@
 // nav.js - يُستدعى من كل صفحة لعرض الهيدر والفوتر بشكل موحّد، ولمعرفة حالة تسجيل الدخول والدور
 import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from "./firebase-config.js";
 
+/**
+ * أداة تشخيص مؤقتة: أي خطأ غير متوقع (زي أخطاء Firestore Permission/Index)
+ * هيظهر في شريط أحمر أعلى الصفحة بدل ما يختفي في الـ Console فقط - عشان
+ * تقدر تاخد سكرين شوت للرسالة الحقيقية بسهولة من الموبايل بدون أدوات مطوّرين.
+ */
+function showErrorBanner(message) {
+  if (document.getElementById("debug-error-banner")) return; // بنر واحد بس في المرة
+  const banner = document.createElement("div");
+  banner.id = "debug-error-banner";
+  banner.style.cssText = "position:fixed;top:0;right:0;left:0;z-index:9999;background:#d94848;color:#fff;padding:12px 16px;font-size:13px;line-height:1.6;direction:ltr;text-align:left;word-break:break-all;";
+  banner.innerHTML = `<b>خطأ (Debug):</b> ${message}`;
+  document.body.prepend(banner);
+}
+
+window.addEventListener("error", (e) => showErrorBanner(e.message || String(e)));
+window.addEventListener("unhandledrejection", (e) => {
+  const msg = e.reason?.message || e.reason?.code || String(e.reason);
+  showErrorBanner(msg);
+});
+
+
 export function renderHeader() {
   const header = document.createElement("header");
   header.className = "site-header";
