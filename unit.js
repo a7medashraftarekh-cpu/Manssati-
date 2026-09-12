@@ -1,5 +1,5 @@
-import { renderHeader, renderFooter, watchAuth } from "./nav.js?v=2";
-import { getUnit, listLessonsByUnit, listUserEnrollments } from "./db.js?v=2";
+import { renderHeader, renderFooter, watchAuth } from "./nav.js?v=3";
+import { getUnit, listLessonsByUnit, listUserEnrollments } from "./db.js?v=3";
 
 renderHeader();
 renderFooter();

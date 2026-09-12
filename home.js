@@ -1,6 +1,6 @@
-import { renderHeader, renderFooter, watchAuth } from "./nav.js?v=2";
-import { listUnits, listLessonsByUnit } from "./db.js?v=2";
-import { db, collection, getDocs } from "./firebase-config.js?v=2";
+import { renderHeader, renderFooter, watchAuth } from "./nav.js?v=3";
+import { listUnits, listLessonsByUnit } from "./db.js?v=3";
+import { db, collection, getDocs } from "./firebase-config.js?v=3";
 
 renderHeader();
 renderFooter();

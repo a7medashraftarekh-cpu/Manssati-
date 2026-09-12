@@ -35,11 +35,11 @@ service cloud.firestore {
 
     // ---------------- الوحدات والدروس ----------------
     match /units/{unitId} {
-      allow read: if resource.data.isPublished == true || isAdmin();
+      allow read: if (resource != null && resource.data.isPublished == true) || isAdmin();
       allow write: if isAdmin();
     }
     match /lessons/{lessonId} {
-      allow read: if resource.data.isPublished == true || isAdmin();
+      allow read: if (resource != null && resource.data.isPublished == true) || isAdmin();
       allow write: if isAdmin();
     }
 
@@ -60,7 +60,7 @@ service cloud.firestore {
     // لتأمين هذا فعليًا في الإنتاج، الحل القياسي هو Firebase Cloud Functions
     // (كود خادم صغير يستقبل Webhook من Paymob ويتحقق من التوقيع قبل التحديث).
     match /orders/{orderId} {
-      allow get: if isOwner(resource.data.userId) || isAdmin();
+      allow get: if isSignedIn() && (resource == null || isOwner(resource.data.userId) || isAdmin());
       allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
@@ -76,7 +76,7 @@ service cloud.firestore {
     // القيد الحقيقي هنا: الطالب لا يستطيع منح نفسه صلاحية وصول إلا إذا كان
     // يملك طلبًا (Order) بحالة PAID يخصّه فعلًا ويشير لنفس الوحدة/الحصة.
     match /enrollments/{enrollmentId} {
-      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow get: if isAdmin() || (isSignedIn() && (resource == null || resource.data.userId == request.auth.uid));
       allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow create: if isAdmin() || (
         isSignedIn()
@@ -90,7 +90,10 @@ service cloud.firestore {
 
     // ---------------- تقدّم الطالب ----------------
     match /progress/{progressId} {
-      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      // resource == null لازم تتفحص الأول لأن قراءة درس لأول مرة (قبل أي تقدّم
+      // مسجَّل) يعني المستند مش موجود أصلًا - محاولة قراءة resource.data وهو
+      // غير موجود تسبب خطأ بدل ما ترجع ببساطة "غير موجود".
+      allow get: if isAdmin() || (isSignedIn() && (resource == null || resource.data.userId == request.auth.uid));
       allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow create, update: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow delete: if isAdmin();

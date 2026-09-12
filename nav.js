@@ -1,12 +1,21 @@
 // nav.js - يُستدعى من كل صفحة لعرض الهيدر والفوتر بشكل موحّد، ولمعرفة حالة تسجيل الدخول والدور
-import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from "./firebase-config.js?v=2";
+import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from "./firebase-config.js?v=3";
 
 /**
  * أداة تشخيص مؤقتة: أي خطأ غير متوقع (زي أخطاء Firestore Permission/Index)
  * هيظهر في شريط أحمر أعلى الصفحة بدل ما يختفي في الـ Console فقط - عشان
  * تقدر تاخد سكرين شوت للرسالة الحقيقية بسهولة من الموبايل بدون أدوات مطوّرين.
  */
+/**
+ * أداة تشخيص مؤقتة: أي خطأ غير متوقع (زي أخطاء Firestore Permission/Index)
+ * هيظهر في شريط أحمر أعلى الصفحة - لكن فقط لو الرابط فيه ?debug=1، عشان
+ * الطلاب والزوار العاديين ميشوفوش أي رسائل تقنية أبدًا. لو عايز تشوف الأخطاء
+ * وقت الاختبار، افتح أي صفحة وضيف ?debug=1 في آخر الرابط.
+ */
+const debugMode = new URLSearchParams(location.search).get("debug") === "1";
+
 function showErrorBanner(message) {
+  if (!debugMode) return;
   if (document.getElementById("debug-error-banner")) return; // بنر واحد بس في المرة
   const banner = document.createElement("div");
   banner.id = "debug-error-banner";
@@ -77,7 +86,7 @@ export function renderFooter() {
         <p style="font-size:14px;margin-bottom:6px;" id="footer-contact">ahmed.and.hasan0@gmail.com</p>
         <p style="font-size:14px;margin-bottom:6px;color:#94a3b8;">01080343968</p>
         <p style="font-size:13px;color:#94a3b8;margin-top:10px;">
-          الموقع من أعمالي:
+          تصميم وتطوير:
           <a href="https://eng-a7med-ashraf.vercel.app/" target="_blank" rel="noreferrer" style="color:#dcae4c;font-weight:700;">ENG A7MED ASHRAF</a>
         </p>
       </div>
