@@ -6,10 +6,14 @@ import {
 
 // ---------- Units ----------
 export async function listUnits({ onlyPublished = false } = {}) {
-  const snap = await getDocs(query(collection(db, "units"), orderBy("order", "asc")));
-  let units = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  if (onlyPublished) units = units.filter((u) => u.isPublished);
-  return units;
+  // مهم: القواعد الأمنية (firestore.rules) بتشترط isPublished==true صراحة.
+  // Firestore لا يقبل جلب كل المستندات ثم الفلترة في الكود لاحقًا - لازم يكون
+  // شرط الفلترة موجود في الاستعلام (Query) نفسه، وإلا يُرفض الطلب بالكامل.
+  const constraints = onlyPublished
+    ? [where("isPublished", "==", true), orderBy("order", "asc")]
+    : [orderBy("order", "asc")];
+  const snap = await getDocs(query(collection(db, "units"), ...constraints));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function getUnit(slug) {
@@ -31,10 +35,12 @@ export async function deleteUnit(slug) {
 
 // ---------- Lessons ----------
 export async function listLessonsByUnit(unitId, { onlyPublished = false } = {}) {
-  const snap = await getDocs(query(collection(db, "lessons"), where("unitId", "==", unitId), orderBy("order", "asc")));
-  let lessons = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  if (onlyPublished) lessons = lessons.filter((l) => l.isPublished);
-  return lessons;
+  // نفس الملاحظة: شرط isPublished لازم يكون داخل الاستعلام نفسه لو onlyPublished=true
+  const constraints = onlyPublished
+    ? [where("unitId", "==", unitId), where("isPublished", "==", true), orderBy("order", "asc")]
+    : [where("unitId", "==", unitId), orderBy("order", "asc")];
+  const snap = await getDocs(query(collection(db, "lessons"), ...constraints));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function getLesson(id) {
