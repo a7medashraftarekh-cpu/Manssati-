@@ -36,7 +36,7 @@ protectPage().then(async (user) => {
     const cards = await Promise.all(unitEnrollments.map(async (e) => {
       const unit = await getUnit(e.unitId);
       if (!unit) return "";
-      const lessons = await listLessonsByUnit(unit.id);
+      const lessons = await listLessonsByUnit(unit.id, { onlyPublished: true });
       return `<a href="unit.html?slug=${unit.slug}" class="card"><h3 style="color:var(--brand-900);">${unit.title}</h3><p class="text-muted" style="font-size:14px;">${lessons.length} حصة</p></a>`;
     }));
     unitsContainer.innerHTML = cards.join("");

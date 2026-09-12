@@ -85,7 +85,7 @@ async function render() {
   }
 
   // ---- التنقل بين الدروس + شريط التقدّم ----
-  const siblings = await listLessonsByUnit(unit.id);
+  const siblings = await listLessonsByUnit(unit.id, { onlyPublished: true });
   const idx = siblings.findIndex((l) => l.id === lesson.id);
   const prevLink = document.getElementById("prev-link");
   const nextLink = document.getElementById("next-link");
@@ -96,7 +96,7 @@ async function render() {
 }
 
 async function renderProgress(unitId, siblingsMaybe) {
-  const siblings = siblingsMaybe || await listLessonsByUnit(unitId);
+  const siblings = siblingsMaybe || await listLessonsByUnit(unitId, { onlyPublished: true });
   const progress = await listUserProgress(currentUser.id);
   const completedIds = new Set(progress.filter((p) => p.isCompleted).map((p) => p.lessonId));
   const completedInUnit = siblings.filter((l) => completedIds.has(l.id)).length;
