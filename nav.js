@@ -1,5 +1,5 @@
 // nav.js - يُستدعى من كل صفحة لعرض الهيدر والفوتر بشكل موحّد، ولمعرفة حالة تسجيل الدخول والدور
-import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from "./firebase-config.js";
+import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from "./firebase-config.js?v=2";
 
 /**
  * أداة تشخيص مؤقتة: أي خطأ غير متوقع (زي أخطاء Firestore Permission/Index)
@@ -10,15 +10,20 @@ function showErrorBanner(message) {
   if (document.getElementById("debug-error-banner")) return; // بنر واحد بس في المرة
   const banner = document.createElement("div");
   banner.id = "debug-error-banner";
-  banner.style.cssText = "position:fixed;top:0;right:0;left:0;z-index:9999;background:#d94848;color:#fff;padding:12px 16px;font-size:13px;line-height:1.6;direction:ltr;text-align:left;word-break:break-all;";
+  banner.style.cssText = "position:fixed;top:0;right:0;left:0;z-index:9999;background:#d94848;color:#fff;padding:12px 16px;font-size:12px;line-height:1.6;direction:ltr;text-align:left;word-break:break-all;max-height:40vh;overflow-y:auto;";
   banner.innerHTML = `<b>خطأ (Debug):</b> ${message}`;
   document.body.prepend(banner);
 }
 
-window.addEventListener("error", (e) => showErrorBanner(e.message || String(e)));
+window.addEventListener("error", (e) => {
+  const location = e.filename ? ` [${e.filename.split("/").pop()}:${e.lineno}]` : "";
+  showErrorBanner((e.message || String(e)) + location);
+});
 window.addEventListener("unhandledrejection", (e) => {
   const msg = e.reason?.message || e.reason?.code || String(e.reason);
-  showErrorBanner(msg);
+  // نطبع أول 3 أسطر من الـ stack trace - بتوضح غالبًا اسم الدالة والملف اللي سبب المشكلة
+  const stackLines = (e.reason?.stack || "").split("\n").slice(0, 3).join(" | ");
+  showErrorBanner(`${msg}<br><span style="opacity:.8;font-size:10px;">${stackLines}</span>`);
 });
 
 
@@ -61,7 +66,7 @@ export function renderFooter() {
       </div>
       <div>
         <h4 style="color:#fff;margin-bottom:10px;">روابط سريعة</h4>
-        <ul style="font-size:14px;display:flex;flex-direction:column;gap:8px;">
+        <ul id="footer-quick-links" style="font-size:14px;display:flex;flex-direction:column;gap:8px;">
           <li><a href="units.html">الوحدات</a></li>
           <li><a href="login.html">تسجيل الدخول</a></li>
           <li><a href="register.html">إنشاء حساب</a></li>
@@ -69,7 +74,12 @@ export function renderFooter() {
       </div>
       <div>
         <h4 style="color:#fff;margin-bottom:10px;">تواصل معنا</h4>
-        <p style="font-size:14px;" id="footer-contact">support@example.com</p>
+        <p style="font-size:14px;margin-bottom:6px;" id="footer-contact">ahmed.and.hasan0@gmail.com</p>
+        <p style="font-size:14px;margin-bottom:6px;color:#94a3b8;">01080343968</p>
+        <p style="font-size:13px;color:#94a3b8;margin-top:10px;">
+          الموقع من أعمالي:
+          <a href="https://eng-a7med-ashraf.vercel.app/" target="_blank" rel="noreferrer" style="color:#dcae4c;font-weight:700;">ENG A7MED ASHRAF</a>
+        </p>
       </div>
     </div>
     <div class="footer-bottom">© <span id="footer-year"></span> أكاديميتي. جميع الحقوق محفوظة.</div>
@@ -100,7 +110,7 @@ export function watchAuth(callback) {
 function updateNavActions(profile) {
   const desktop = document.getElementById("nav-actions");
   const mobile = document.getElementById("mobile-nav-actions");
-  if (!desktop) return;
+  const footerLinks = document.getElementById("footer-quick-links");
 
   let html;
   if (profile) {
@@ -115,8 +125,17 @@ function updateNavActions(profile) {
       <a href="register.html" class="btn btn-gold btn-sm">ابدأ الآن</a>
     `;
   }
-  desktop.innerHTML = html;
+
+  if (desktop) desktop.innerHTML = html;
   if (mobile) mobile.innerHTML = html;
+
+  if (footerLinks) {
+    footerLinks.innerHTML = profile
+      ? `<li><a href="units.html">الوحدات</a></li><li><a href="dashboard.html">لوحتي</a></li>${
+          profile.role === "ADMIN" ? '<li><a href="admin.html">لوحة الأدمن</a></li>' : ""
+        }`
+      : `<li><a href="units.html">الوحدات</a></li><li><a href="login.html">تسجيل الدخول</a></li><li><a href="register.html">إنشاء حساب</a></li>`;
+  }
 
   document.querySelectorAll("#logout-btn").forEach((btn) =>
     btn.addEventListener("click", async () => {
