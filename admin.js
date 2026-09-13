@@ -1,12 +1,12 @@
-import { renderHeader, renderFooter, protectPage } from "./nav.js?v=3";
+import { renderHeader, renderFooter, protectPage } from "./nav.js?v=4";
 import {
   listUnits, listLessonsByUnit, createUnit, updateUnit, deleteUnit,
   createLesson, updateLesson, deleteLesson, getLesson,
   listUsers, updateUserProfile, listAllOrders, listOffers, createOffer, updateOffer, deleteOffer,
   getSettings, updateSettings
-} from "./db.js?v=3";
-import { db, collection, getDocs } from "./firebase-config.js?v=3";
-import { uploadVideoToCloudinary } from "./cloudinary-config.js?v=3";
+} from "./db.js?v=4";
+import { db, collection, getDocs } from "./firebase-config.js?v=4";
+import { uploadVideoToCloudinary } from "./cloudinary-config.js?v=4";
 
 renderHeader();
 renderFooter();

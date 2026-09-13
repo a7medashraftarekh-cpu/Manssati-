@@ -1,5 +1,5 @@
 // nav.js - يُستدعى من كل صفحة لعرض الهيدر والفوتر بشكل موحّد، ولمعرفة حالة تسجيل الدخول والدور
-import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from "./firebase-config.js?v=3";
+import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from "./firebase-config.js?v=4";
 
 /**
  * أداة تشخيص مؤقتة: أي خطأ غير متوقع (زي أخطاء Firestore Permission/Index)
@@ -85,8 +85,8 @@ export function renderFooter() {
         <h4 style="color:#fff;margin-bottom:10px;">تواصل معنا</h4>
         <p style="font-size:14px;margin-bottom:6px;" id="footer-contact">ahmed.and.hasan0@gmail.com</p>
         <p style="font-size:14px;margin-bottom:6px;color:#94a3b8;">01080343968</p>
-        <p style="font-size:13px;color:#94a3b8;margin-top:10px;">
-          تصميم وتطوير:
+        <p style="font-size:13px;color:#94a3b8;margin-top:10px;direction:ltr;text-align:right;">
+          Designed &amp; Developed by
           <a href="https://eng-a7med-ashraf.vercel.app/" target="_blank" rel="noreferrer" style="color:#dcae4c;font-weight:700;">ENG A7MED ASHRAF</a>
         </p>
       </div>

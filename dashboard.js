@@ -1,5 +1,5 @@
-import { renderHeader, renderFooter, protectPage } from "./nav.js?v=3";
-import { listUserEnrollments, getUnit, listLessonsByUnit, listOrdersByUser, listUserProgress, getLesson } from "./db.js?v=3";
+import { renderHeader, renderFooter, protectPage } from "./nav.js?v=4";
+import { listUserEnrollments, getUnit, listLessonsByUnit, listOrdersByUser, listUserProgress, getLesson } from "./db.js?v=4";
 
 renderHeader();
 renderFooter();
