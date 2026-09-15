@@ -1,5 +1,5 @@
-import { renderHeader, renderFooter } from "./nav.js?v=4";
-import { auth, createUserWithEmailAndPassword, updateProfile, db, doc, setDoc, serverTimestamp } from "./firebase-config.js?v=4";
+import { renderHeader, renderFooter } from "./nav.js?v=5";
+import { auth, createUserWithEmailAndPassword, updateProfile, db, doc, setDoc, serverTimestamp } from "./firebase-config.js?v=5";
 
 renderHeader();
 renderFooter();

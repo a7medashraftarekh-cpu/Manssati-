@@ -1,12 +1,12 @@
-import { renderHeader, renderFooter, protectPage } from "./nav.js?v=4";
+import { renderHeader, renderFooter, protectPage } from "./nav.js?v=5";
 import {
   listUnits, listLessonsByUnit, createUnit, updateUnit, deleteUnit,
   createLesson, updateLesson, deleteLesson, getLesson,
   listUsers, updateUserProfile, listAllOrders, listOffers, createOffer, updateOffer, deleteOffer,
-  getSettings, updateSettings
-} from "./db.js?v=4";
-import { db, collection, getDocs } from "./firebase-config.js?v=4";
-import { uploadVideoToCloudinary } from "./cloudinary-config.js?v=4";
+  getSettings, updateSettings, markOrderPaid, grantEnrollment
+} from "./db.js?v=5";
+import { db, collection, getDocs } from "./firebase-config.js?v=5";
+import { uploadVideoToCloudinary } from "./cloudinary-config.js?v=5";
 
 renderHeader();
 renderFooter();
@@ -345,13 +345,43 @@ async function loadOrders() {
 }
 
 const orderStatusLabel = { PENDING: "قيد الانتظار", PAID: "مدفوع", FAILED: "فشل", CANCELLED: "ملغي" };
+const providerLabel = { vodafone_cash: "فودافون كاش", demo: "تجريبي", paymob: "Paymob" };
+
 function renderOrders(orders) {
-  document.getElementById("orders-body").innerHTML = orders.map((o) => `
+  document.getElementById("orders-body").innerHTML = orders.map((o) => {
+    const isVodafone = o.payment?.provider === "vodafone_cash";
+    const paymentDetails = isVodafone
+      ? `فودافون كاش${o.payment?.senderFirst3 ? `<br><span style="font-size:11px;color:var(--slate-500);">الرقم: ${o.payment.senderFirst3}***${o.payment.senderLast2}</span>` : ""}`
+      : (providerLabel[o.payment?.provider] || o.payment?.provider || "-");
+
+    const confirmBtn = o.status === "PENDING"
+      ? `<button class="btn btn-gold btn-sm confirm-order" data-id="${o.id}" data-unit="${o.items?.[0]?.unitId || ""}" data-lesson="${o.items?.[0]?.lessonId || ""}" data-user="${o.userId}">✔ تأكيد الدفع</button>`
+      : "-";
+
+    return `
     <tr>
       <td>${o.id.slice(0, 8)}</td><td>${o.userId.slice(0, 8)}</td><td>${o.total} ج.م</td>
+      <td>${paymentDetails}</td>
       <td><span class="badge ${o.status === "PAID" ? "badge-success" : o.status === "FAILED" ? "badge-danger" : ""}">${orderStatusLabel[o.status] || o.status}</span></td>
       <td>${o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString("ar-EG") : "-"}</td>
-    </tr>`).join("") || `<tr><td colspan="5" class="text-center text-muted">لا توجد طلبات.</td></tr>`;
+      <td>${confirmBtn}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="7" class="text-center text-muted">لا توجد طلبات.</td></tr>`;
+
+  document.querySelectorAll(".confirm-order").forEach((btn) => btn.addEventListener("click", async () => {
+    if (!confirm("هل تأكّدت من استلام التحويل فعليًا قبل الموافقة؟")) return;
+    btn.disabled = true;
+    btn.textContent = "جارٍ التأكيد...";
+    const orderId = btn.dataset.id;
+    const unitId = btn.dataset.unit || null;
+    const lessonId = btn.dataset.lesson || null;
+    const userId = btn.dataset.user;
+
+    await markOrderPaid(orderId);
+    await grantEnrollment({ userId, unitId, lessonId, orderId });
+
+    loadOrders();
+  }));
 }
 
 // ---------------- Offers ----------------

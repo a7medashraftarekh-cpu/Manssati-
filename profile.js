@@ -1,6 +1,6 @@
-import { renderHeader, renderFooter, protectPage } from "./nav.js?v=4";
-import { updateUserProfile } from "./db.js?v=4";
-import { auth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "./firebase-config.js?v=4";
+import { renderHeader, renderFooter, protectPage } from "./nav.js?v=5";
+import { updateUserProfile } from "./db.js?v=5";
+import { auth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "./firebase-config.js?v=5";
 
 renderHeader();
 renderFooter();

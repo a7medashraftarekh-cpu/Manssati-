@@ -2,7 +2,7 @@
 import {
   db, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
   collection, query, where, orderBy, limit, serverTimestamp
-} from "./firebase-config.js?v=4";
+} from "./firebase-config.js?v=5";
 
 // ---------- Units ----------
 export async function listUnits({ onlyPublished = false } = {}) {

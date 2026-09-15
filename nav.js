@@ -1,5 +1,5 @@
 // nav.js - يُستدعى من كل صفحة لعرض الهيدر والفوتر بشكل موحّد، ولمعرفة حالة تسجيل الدخول والدور
-import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from "./firebase-config.js?v=4";
+import { auth, db, doc, getDoc, onAuthStateChanged, signOut } from "./firebase-config.js?v=5";
 
 /**
  * أداة تشخيص مؤقتة: أي خطأ غير متوقع (زي أخطاء Firestore Permission/Index)
